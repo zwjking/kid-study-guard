@@ -1,0 +1,49 @@
+# 学习守护（kid-study-guard）使用许可
+
+版权所有 © 2026 君哥（GitHub: [@zwjking](https://github.com/zwjking)）。保留所有权利。
+
+## 一、授予的权利
+
+在遵守本许可的前提下，任何人可出于**非商业目的**免费地：
+
+1. 使用、复制本项目的源代码与文档；
+2. 修改源代码，制作衍生作品；
+3. 以非商业方式分发原始版本或衍生版本。
+
+上述行为须保留本许可、原始版权声明，以及明显的修改说明。
+
+## 二、商业使用限制（重要）
+
+**未经作者事先书面授权，严禁将本项目（含源代码、文档及其任何衍生作品）用于任何商业目的**，包括但不限于：
+
+- 将本项目或其改版用于销售、收费服务、广告变现；
+- 将其作为商业产品、SaaS、内部付费系统的一部分；
+- 以盈利为目的向第三方提供基于本项目的功能或服务。
+
+如有商业合作、授权需求，请**事先联系作者**获取书面许可：
+- GitHub：[@zwjking](https://github.com/zwjking)
+
+## 三、免责声明
+
+本项目按"原样"（AS IS）提供，不提供任何明示或暗示的担保。作者不对因使用本软件产生的任何直接、间接损失负责。
+
+## 四、第三方组件
+
+本项目依赖的第三方组件遵循其各自许可：
+- GeckoView（Mozilla Public License 2.0）
+- WorkBuddy 云服务 SDK（遵循其平台条款）
+- 其他开源依赖见各工程 `build.gradle`
+
+---
+
+# kid-study-guard License (Non-Commercial)
+
+Copyright © 2026 君哥 (GitHub: [@zwjking](https://github.com/zwjking)). All rights reserved.
+
+This software is licensed for **non-commercial use only**. You may use, modify, and
+redistribute it for non-commercial purposes, provided you retain this license and
+the copyright notice. **Commercial use is prohibited without prior written
+authorization from the author.** For commercial licensing, contact @zwjking on
+GitHub.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.

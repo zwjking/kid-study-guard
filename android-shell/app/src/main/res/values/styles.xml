@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 浅色主题：与网页端色板一致，无 ActionBar。
+         状态栏/导航栏不隐藏（2026-11-08 君哥定：与原厂自带应用保持一致）。
+         Android 5.0 没有 LIGHT_STATUS_BAR，栏内图标恒为白色，
+         所以两条栏都用深色，否则白图标在浅底上看不见。 -->
+    <style name="SGTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#F4F6FA</item>
+        <item name="android:colorPrimary">#4F63E0</item>
+        <item name="android:colorPrimaryDark">#3B4FD1</item>
+        <item name="android:colorAccent">#4F63E0</item>
+        <item name="android:statusBarColor">#3B4FD1</item>
+        <item name="android:navigationBarColor">#1B2135</item>
+        <item name="android:windowActionModeOverlay">true</item>
+    </style>
+</resources>

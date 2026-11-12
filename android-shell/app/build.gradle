@@ -1,0 +1,93 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.zhijue.studyguardian'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.zhijue.studyguardian'
+        minSdk 21
+        targetSdk 34
+        versionCode 6
+        versionName '1.1.4'
+
+        // 台电 X98 Air II（Baytrail）只有 x86 32 位；
+        // GeckoView 从 101 起砍掉了 x86，所以引擎锁在 100，ABI 也只留 x86。
+        ndk { abiFilters 'x86' }
+    }
+
+    flavorDimensions += "role"
+    productFlavors {
+        child {
+            dimension "role"
+            applicationIdSuffix ".child"
+            // 孩子端：全屏锁定，返回键不出 App
+            buildConfigField "String", "APP_ROLE", '"child"'
+            buildConfigField "boolean", "KIOSK", "true"
+            resValue "string", "app_label", "学习守护"
+        }
+        parent {
+            dimension "role"
+            applicationIdSuffix ".parent"
+            // 家长端：正常使用，返回键按系统行为
+            buildConfigField "String", "APP_ROLE", '"parent"'
+            buildConfigField "boolean", "KIOSK", "false"
+            resValue "string", "app_label", "学习守护·家长"
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    signingConfigs {
+        selfRelease {
+            storeFile file(System.getenv("SG_KEYSTORE") ?: "studyguardian.jks")
+            storePassword System.getenv("SG_STORE_PASS") ?: "study123456"
+            keyAlias System.getenv("SG_KEY_ALIAS") ?: "studyguardian"
+            keyPassword System.getenv("SG_KEY_PASS") ?: "study123456"
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.selfRelease
+        }
+    }
+
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            def role = variant.productFlavors.collect { it.name }.join('-')
+            outputFileName = "study-guardian-${role}-${variant.buildType.name}.apk"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    // GeckoView 的 libxul.so 需要在磁盘上按文件加载，不能压进 APK 里直接 mmap
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+}
+
+dependencies {
+    // 自带 Gecko 内核（Firefox 100），不依赖系统 WebView。
+    // 系统自带 WebView 是 Chromium 37，跑不了 async/await 和 CSS 变量。
+    implementation 'org.mozilla.geckoview:geckoview:100.0.20220425210429'
+}

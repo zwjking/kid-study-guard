@@ -1,0 +1,30 @@
+# ===== 构建缓存（体积巨大，不入库）=====
+android-shell/.gradle/
+android-shell-kg/.gradle/
+android-shell/app/build/
+android-shell-kg/app/build/
+build/
+node_modules/
+toolchain/
+
+# ===== 签名密钥（绝不可公开）=====
+*.jks
+
+# ===== 本地 SDK 路径（含本机绝对路径）=====
+local.properties
+
+# ===== 产物 APK =====
+dist/
+*.apk
+
+# ===== 知识图谱离线站点数据 =====
+# 来自独立项目《中小学生知识图谱》的资料库镜像（约 15MB，含 9.3MB 题库）。
+# 构建知识图谱 APK 时，需自行从源镜像解压到：
+#   android-shell-kg/app/src/main/assets/site/
+# 详见 README「构建知识图谱 APK」。
+android-shell-kg/app/src/main/assets/site/
+
+# ===== 临时文件 =====
+.shot_*.png
+_probe/
+backup/

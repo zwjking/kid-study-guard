@@ -1,0 +1,841 @@
+/* ===========================================================
+   学习守护 · 样式（浅色 / 平板优先）
+   =========================================================== */
+
+:root{
+  --bg:#F4F6FA;
+  --card:#FFFFFF;
+  --ink:#1A1F2B;
+  --ink2:#5A6273;
+  --ink3:#98A0B0;
+  --line:#E7EAF1;
+  --brand:#4F63E0;
+  --brand2:#6B7CF0;
+  --brand-soft:#EDEFFE;
+  --orange:#FF8A3D;
+  --orange-soft:#FFF1E7;
+  --green:#1FA36B;
+  --green-soft:#E6F7EF;
+  --teal:#12A594;
+  --red:#E05C5C;
+  --red-soft:#FDECEC;
+  --amber:#D99322;
+  --amber-soft:#FDF3E0;
+  --shadow:0 2px 8px rgba(24,32,64,.05), 0 12px 32px rgba(24,32,64,.04);
+  --r:18px;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+/* 应用壳：让 html/body 彻底不滚，滚动只发生在中间的 .shell-scroll 里。
+   iOS 桌面模式(standalone) 下 body 一旦可滚，所有 fixed 元素都会跟着页面漂 —— 这是根治办法 */
+html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none;}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- 应用壳骨架 ---------- */
+#app{
+  height:100%;
+  display:flex;flex-direction:column;overflow:hidden;
+  padding-top:env(safe-area-inset-top,0px);
+}
+@supports (height:100dvh){ #app{height:100dvh;} }
+.shell-top{flex:0 0 auto;z-index:50;}
+.shell-scroll{
+  flex:1 1 auto;min-height:0;
+  overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;font-size:inherit;}
+ul{margin:0;padding:0;list-style:none;}
+
+/* ---------- 顶栏 ---------- */
+/* 不再用 sticky / backdrop-filter：iOS 上 fixed+毛玻璃会让固定定位失效（WebKit #173250）；
+   壳布局里顶栏本身就是固定项，实色白底＋细线也更接近原生 App */
+.topbar{
+  position:relative;z-index:50;
+  background:#FFFFFF;
+  border-bottom:1px solid var(--line);
+}
+.topbar-in{
+  max-width:1080px;margin:0 auto;padding:12px 20px;
+  display:flex;align-items:center;gap:14px;
+}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:.2px;}
+.logo .dot{
+  width:26px;height:26px;border-radius:9px;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800;
+}
+/* 版本角标：点一下强制绕开缓存取最新版 */
+.ver{
+  font-size:9.5px;font-weight:700;letter-spacing:.2px;
+  color:var(--ink3);background:#F2F4F9;border:1px solid var(--line);
+  border-radius:6px;padding:2px 5px;line-height:1.5;
+  white-space:nowrap;font-variant-numeric:tabular-nums;
+  transition:.15s;flex:0 0 auto;
+}
+.ver:active{transform:scale(.93);background:#E5EAF4;color:var(--ink2);}
+.spacer{flex:1;}
+/* 同步状态：一行极小的字，只出现在家长端看板。平时几乎看不见，出问题才跳出来。
+   放在进度卡和「今日明细」之间——卡片下沿留 8px，紧跟的 .sec 由 26px 收到 14px，
+   整体间距和原来基本一致，不多出空白。 */
+#syncBadge{margin:8px 4px 0;text-align:right;}
+#syncBadge:empty{display:none;}
+#syncBadge + .sec{margin-top:14px;}
+.sync-line{
+  font-size:10.5px;line-height:1.4;color:var(--ink3);
+  background:none;border:0;padding:0;font-family:inherit;
+  display:block;width:100%;margin:0;letter-spacing:.2px;
+  text-align:right;   /* button 自带居中，这里显式拉回右对齐 */
+}
+.sync-line.bad{
+  color:var(--red);font-weight:700;cursor:pointer;text-decoration:underline;
+  text-underline-offset:2px;
+}
+.sync-line.bad:active{opacity:.6;}
+.role-switch{
+  display:flex;background:#EDF0F6;border-radius:12px;padding:3px;gap:2px;
+}
+.role-switch button{
+  padding:6px 14px;border-radius:10px;font-size:13.5px;color:var(--ink2);font-weight:600;
+  transition:.18s;
+}
+.role-switch button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(24,32,64,.1);}
+
+/* 演示时钟 */
+.clock-box{
+  display:flex;align-items:center;gap:8px;
+  background:var(--amber-soft);border:1px solid #F3E2BC;
+  border-radius:12px;padding:5px 8px 5px 11px;
+}
+.clock-box .lbl{font-size:11px;color:#96702A;font-weight:700;letter-spacing:.4px;}
+.clock-box .val{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:#7A5A17;}
+.clock-box button{
+  background:#fff;border-radius:8px;padding:3px 8px;font-size:12px;font-weight:700;
+  color:#8A6419;box-shadow:0 1px 3px rgba(0,0,0,.07);
+}
+.clock-box button:active{transform:scale(.95);}
+
+/* ---------- 容器 ---------- */
+/* 底栏已在壳布局的流内，这里不再预留 110px，只留一点收尾呼吸 */
+.app{max-width:1080px;margin:0 auto;padding:20px 20px 22px;}
+
+/* ---------- 自由时间余额条 ---------- */
+.balance{
+  background:linear-gradient(120deg,#2B3A6B,#4F63E0);
+  border-radius:var(--r);padding:20px 22px;color:#fff;
+  display:flex;align-items:center;gap:20px;
+  box-shadow:0 8px 28px rgba(79,99,224,.24);
+  position:relative;overflow:hidden;
+}
+.balance::after{
+  content:"";position:absolute;right:-40px;top:-60px;width:200px;height:200px;
+  background:radial-gradient(circle,rgba(255,255,255,.16),transparent 68%);
+}
+.balance .main{flex:1;min-width:0;}
+.balance .cap{font-size:12.5px;opacity:.72;letter-spacing:.6px;font-weight:600;}
+.balance .num{
+  font-size:44px;font-weight:800;line-height:1.15;letter-spacing:-1px;
+  font-variant-numeric:tabular-nums;
+}
+.balance .num small{font-size:16px;font-weight:600;opacity:.8;margin-left:4px;}
+.balance .sub{font-size:12.5px;opacity:.7;margin-top:2px;}
+.balance .side{text-align:right;font-size:12.5px;opacity:.82;line-height:1.9;position:relative;z-index:2;}
+.balance .side b{font-size:15px;}
+.balance.low{background:linear-gradient(120deg,#7A3B2B,#C7603C);}
+.balance.zero{background:linear-gradient(120deg,#4A4F5C,#767C8C);}
+
+/* ---------- 四格进度 ---------- */
+.grids{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px;}
+.grid-card{
+  background:var(--card);border-radius:15px;padding:14px 14px 12px;
+  border:1px solid var(--line);box-shadow:var(--shadow);
+  transition:.2s;position:relative;
+}
+.grid-card .gname{font-size:13.5px;font-weight:700;color:var(--ink2);}
+.grid-card .gstate{font-size:12px;color:var(--ink3);margin-top:3px;}
+.grid-card.done{border-color:#BFE8D3;background:var(--green-soft);}
+.grid-card.done .gname{color:#137A4E;}
+.grid-card.rework{border-color:#F5C9C9;background:var(--red-soft);}
+.grid-card.rework .gname{color:#B33A3A;}
+.grid-card .badge-dot{
+  position:absolute;top:12px;right:12px;width:8px;height:8px;border-radius:50%;
+  background:var(--line);
+}
+.grid-card.done .badge-dot{background:var(--green);}
+.grid-card.rework .badge-dot{background:var(--red);}
+
+/* ---------- 区块标题 ---------- */
+.sec{margin-top:26px;}
+.sec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
+.sec-h h2{font-size:17px;margin:0;font-weight:750;letter-spacing:.2px;}
+.sec-h .hint{font-size:12.5px;color:var(--ink3);}
+
+/* ---------- 时间轴 ---------- */
+.tl{position:relative;}
+.tl-item{
+  display:flex;gap:14px;background:var(--card);border:1px solid var(--line);
+  border-radius:15px;padding:14px 16px;margin-bottom:9px;
+  box-shadow:var(--shadow);transition:.2s;align-items:center;
+}
+.tl-item .time{
+  font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--ink3);
+  font-weight:700;min-width:96px;letter-spacing:-.2px;
+}
+.tl-item .ico{
+  width:34px;height:34px;border-radius:11px;flex:0 0 34px;
+  display:grid;place-items:center;font-size:15px;background:var(--brand-soft);
+}
+.tl-item .body{flex:1;min-width:0;}
+.tl-item .t{font-size:14.5px;font-weight:700;line-height:1.4;}
+.tl-item .d{font-size:12.5px;color:var(--ink3);line-height:1.5;margin-top:2px;}
+.tl-item .go{
+  flex:0 0 auto;padding:8px 16px;border-radius:11px;background:var(--brand);color:#fff;
+  font-size:13.5px;font-weight:700;box-shadow:0 3px 10px rgba(79,99,224,.28);
+}
+.tl-item .go:active{transform:scale(.96);}
+.tl-item.done{background:#FBFCFD;border-color:#E4EEE8;}
+.tl-item.done .t{color:var(--ink3);text-decoration:line-through;text-decoration-color:#C8CFDA;}
+.tl-item.done .go{background:#EDF1F6;color:var(--ink3);box-shadow:none;}
+.tl-item.now{border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,99,224,.1),var(--shadow);}
+.tl-item.break{background:#FAFBFD;border-style:dashed;}
+.tl-item.break .ico{background:#EEF1F7;}
+.tl-item.break .go{display:none;}
+.tl-item.locked{border-left:3px solid var(--amber);}
+.tl-item.locked .ico{background:var(--amber-soft);}
+.tl-item.rework{border-color:#F1BEBE;background:var(--red-soft);}
+.tl-item.rework .go{background:var(--red);box-shadow:0 3px 10px rgba(224,92,92,.26);}
+
+.tag{
+  display:inline-block;font-size:10.5px;font-weight:800;padding:1.5px 7px;border-radius:6px;
+  vertical-align:2px;margin-left:6px;letter-spacing:.3px;
+}
+.tag.lock{background:var(--amber-soft);color:#9A6C14;}
+.tag.re{background:var(--red-soft);color:#B33A3A;}
+.tag.new{background:var(--brand-soft);color:var(--brand);}
+
+/* ---------- 计时页 ---------- */
+.timer-wrap{
+  position:fixed;inset:0;z-index:100;background:#F7F9FD;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:28px;
+}
+.timer-wrap .tw-top{position:absolute;top:22px;left:0;right:0;text-align:center;}
+.timer-wrap .tw-task{font-size:19px;font-weight:750;}
+.timer-wrap .tw-desc{font-size:13px;color:var(--ink3);margin-top:4px;}
+.ring{position:relative;width:min(64vw,330px);height:min(64vw,330px);margin:18px 0;}
+.ring svg{transform:rotate(-90deg);width:100%;height:100%;}
+.ring .track{fill:none;stroke:#E7EAF1;stroke-width:12;}
+.ring .prog{fill:none;stroke:url(#g1);stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .25s linear;}
+.ring .center{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+.ring .tnum{
+  font-size:62px;font-weight:800;letter-spacing:-2px;font-variant-numeric:tabular-nums;
+  line-height:1;
+}
+.ring .tlabel{font-size:12.5px;color:var(--ink3);margin-top:8px;letter-spacing:1px;font-weight:600;}
+.timer-actions{display:flex;gap:12px;margin-top:14px;}
+.btn{
+  padding:13px 26px;border-radius:14px;font-weight:700;font-size:15px;
+  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);
+}
+.btn.primary{background:var(--brand);color:#fff;border-color:transparent;box-shadow:0 6px 20px rgba(79,99,224,.3);}
+.btn.ghost{background:transparent;box-shadow:none;color:var(--ink3);}
+.btn:active{transform:scale(.97);}
+.timer-hint{
+  position:absolute;bottom:26px;font-size:12.5px;color:var(--ink3);text-align:center;
+  max-width:420px;line-height:1.7;
+}
+
+/* 保活状态行：一眼看懂到底护住没护住。
+   安卓走系统 Wake Lock，iPhone 走隐藏视频，两边的表现都收在这一行里。 */
+.wake-line{
+  margin-top:16px;padding:7px 16px;border-radius:999px;
+  font-size:12.5px;font-weight:650;line-height:1.5;text-align:center;
+  max-width:min(86vw,430px);
+  -webkit-tap-highlight-color:transparent;
+  transition:background .2s,color .2s;
+}
+.wake-line.on{background:#EAF7EF;color:#1F7A48;border:1px solid #CDEBDA;}
+.wake-line.off{background:#FFF2E5;color:#B45309;border:1px solid #FADCB4;cursor:pointer;}
+.ring .tnum.urgent{color:#E05C5C;}
+
+/* 交付面板 */
+.sheet-mask{position:fixed;inset:0;background:rgba(20,26,44,.42);z-index:120;display:grid;place-items:center;padding:20px;}
+.sheet{
+  background:#fff;border-radius:22px;width:min(520px,100%);padding:26px;
+  box-shadow:0 24px 60px rgba(20,26,44,.24);max-height:88vh;overflow:auto;
+}
+.sheet h3{margin:0 0 4px;font-size:20px;}
+.sheet .sub{font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.6;}
+.ev-list{display:grid;gap:10px;}
+.ev{
+  display:flex;align-items:center;gap:13px;border:1.5px solid var(--line);border-radius:15px;
+  padding:15px;transition:.18s;background:#fff;text-align:left;width:100%;
+}
+.ev:active{transform:scale(.985);}
+.ev.sel{border-color:var(--brand);background:var(--brand-soft);}
+.ev .evi{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:18px;background:#F3F5FA;flex:0 0 38px;}
+.ev.sel .evi{background:#fff;}
+.ev .evt{font-size:14.5px;font-weight:700;}
+.ev .evd{font-size:12px;color:var(--ink3);}
+.sheet-actions{display:flex;gap:10px;margin-top:22px;}
+.sheet-actions .btn{flex:1;text-align:center;}
+
+/* ---------- 商店 ---------- */
+.cats{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:16px;-webkit-overflow-scrolling:touch;}
+.cats::-webkit-scrollbar{display:none;}
+.cat{
+  flex:0 0 auto;padding:8px 15px;border-radius:12px;background:#fff;border:1px solid var(--line);
+  font-size:13.5px;font-weight:650;color:var(--ink2);white-space:nowrap;
+}
+.cat.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:12px;}
+.item{
+  background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;position:relative;transition:.18s;
+}
+.item .nm{font-size:14.5px;font-weight:700;line-height:1.45;padding-right:6px;}
+/* 有角标的卡片，标题要给右上角那块让出位置，否则「当天额外 30 分钟屏幕时间」这种长名字会压到标签下面 */
+.item .corner ~ .nm{padding-right:50px;}
+.item .nt{font-size:12px;color:var(--ink3);margin-top:4px;line-height:1.5;flex:1;}
+.item .foot{display:flex;align-items:center;gap:8px;margin-top:13px;}
+.price{font-weight:800;font-size:16px;color:var(--orange);font-variant-numeric:tabular-nums;}
+.price span{font-size:11px;font-weight:700;margin-left:1px;}
+.buy{
+  margin-left:auto;padding:7px 15px;border-radius:10px;background:var(--brand);color:#fff;
+  font-size:13px;font-weight:700;
+}
+.buy.dis{background:#EDF0F6;color:#AEB5C2;}
+.buy:active{transform:scale(.96);}
+.item .corner{
+  position:absolute;top:-1px;right:-1px;font-size:10px;font-weight:800;padding:3px 9px;
+  border-radius:0 16px 0 12px;letter-spacing:.3px;
+}
+.corner.hot{background:var(--orange-soft);color:#C25C15;}
+.corner.big{background:var(--brand-soft);color:var(--brand);}
+.corner.app{background:var(--amber-soft);color:#8F6512;}
+.item.locked{opacity:.48;filter:grayscale(.6);}
+.item.locked .buy{background:#E7EAF1;color:#98A0B0;}
+
+/* 钱包 */
+.wallet{
+  display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--line);
+  border-radius:var(--r);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:16px;
+}
+.wallet .w-ico{width:46px;height:46px;border-radius:15px;background:var(--orange-soft);display:grid;place-items:center;font-size:22px;}
+.wallet .w-num{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1.1;font-variant-numeric:tabular-nums;}
+.wallet .w-cap{font-size:12px;color:var(--ink3);}
+.wallet .w-right{margin-left:auto;text-align:right;font-size:12px;color:var(--ink2);line-height:1.8;}
+
+/* ---------- 成长页 ---------- */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;box-shadow:var(--shadow);text-align:center;}
+.stat .v{font-size:26px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
+.stat .k{font-size:12px;color:var(--ink3);margin-top:2px;}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px;}
+.bdg{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px 12px;text-align:center;box-shadow:var(--shadow);}
+.bdg .bi{font-size:26px;line-height:1;}
+.bdg .bn{font-size:13px;font-weight:700;margin-top:8px;}
+.bdg .bneed{font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.4;}
+.bdg.off{opacity:.42;filter:grayscale(1);}
+
+/* 资料库进度 */
+.book{background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px 17px;box-shadow:var(--shadow);margin-bottom:10px;}
+.book .bh{display:flex;align-items:baseline;gap:9px;}
+.book .bname{font-size:14.5px;font-weight:700;}
+.book .bsub{font-size:11.5px;color:var(--ink3);}
+.book .bnum{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums;}
+.bar{height:8px;border-radius:5px;background:#EEF1F7;margin-top:10px;overflow:hidden;}
+.bar > i{display:block;height:100%;border-radius:5px;transition:width .5s;}
+
+/* ---------- 家长端 ---------- */
+.p-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);margin-bottom:14px;}
+.p-card h3{margin:0 0 14px;font-size:16px;font-weight:750;}
+.p-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #F1F4F9;}
+.p-row:last-child{border-bottom:none;}
+.p-row .pn{font-size:14px;font-weight:650;flex:1;}
+.p-row .ps{font-size:12px;color:var(--ink3);}
+.chip{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:8px;background:#F0F3F8;color:var(--ink2);}
+.chip.ok{background:var(--green-soft);color:#137A4E;}
+.chip.wait{background:var(--amber-soft);color:#8F6512;}
+.chip.bad{background:var(--red-soft);color:#B33A3A;}
+.mini-btn{padding:6px 13px;border-radius:9px;font-size:12.5px;font-weight:700;background:#fff;border:1px solid var(--line);}
+.mini-btn.danger{background:var(--red-soft);color:#B33A3A;border-color:#F3C7C7;}
+.mini-btn.ok{background:var(--green-soft);color:#137A4E;border-color:#C4E8D6;}
+
+/* ---------- 底部 tab（微信式：壳布局固定项，不参与滚动） ---------- */
+.tabbar{
+  flex:0 0 auto;position:relative;z-index:60;
+  background:#FFFFFF;
+  border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  box-shadow:0 -2px 12px rgba(24,32,64,.04);
+}
+/* 列数跟着 tab 数量走：v1.4.0 加了「宠物」变 5 个，
+   以前写死 repeat(4,1fr) 会把第 5 个挤到第二行、被底边裁掉看不见。 */
+.tabbar-in{max-width:1080px;margin:0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;}
+.tab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  height:52px;padding:0;
+  font-size:10.5px;letter-spacing:.2px;color:var(--ink3);font-weight:650;
+  transition:color .16s;
+}
+.tab svg{width:23px;height:23px;display:block;transition:transform .16s ease-out;}
+.tab .ti{font-size:19px;line-height:1;}
+.tab .tn{font-size:10.5px;line-height:1.1;}
+.tab.on{color:var(--brand);}
+.tab.on svg{transform:translateY(-1px);}
+.tab:active svg{transform:scale(.88);}
+.tab:active{color:var(--brand);}
+
+/* 计时页占满滚动区，不要内容内边距 */
+.timer-host{padding:0;}
+
+/* ---------- Toast ---------- */
+#toast{
+  position:fixed;left:50%;bottom:calc(66px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);
+  background:rgba(26,31,43,.94);color:#fff;padding:12px 22px;border-radius:14px;
+  font-size:14px;font-weight:650;z-index:300;opacity:0;transition:.28s;pointer-events:none;
+  box-shadow:0 12px 34px rgba(20,26,44,.3);max-width:88vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* ---------- 完成动效 ---------- */
+@keyframes pop{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.03)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .26s ease-out;}
+@keyframes fly{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-56px) scale(1.35)}}
+.fly-pt{position:fixed;z-index:400;font-weight:800;font-size:20px;color:var(--orange);pointer-events:none;animation:fly 1s ease-out forwards;}
+
+/* ---------- 空态 ---------- */
+.empty{text-align:center;padding:44px 20px;color:var(--ink3);font-size:13.5px;}
+
+/* ---------- 响应 ---------- */
+@media (max-width:720px){
+  .app{padding:14px 14px 22px;}
+  .grids{grid-template-columns:repeat(2,1fr);}
+  .balance{padding:16px 18px;gap:12px;}
+  .balance .num{font-size:36px;}
+  .balance .side{display:none;}
+  .tl-item{padding:11px 13px;gap:8px;flex-wrap:wrap;align-items:flex-start;}
+  .tl-item .time{flex:0 0 100%;min-width:0;font-size:11px;letter-spacing:0;margin-bottom:-2px;}
+  .tl-item .ico{display:none;}
+  .tl-item .body{flex:1 1 auto;min-width:0;}
+  .tl-item .go{flex:0 0 auto;align-self:center;padding:7px 13px;font-size:12.5px;}
+  .tl-item .t{font-size:13.5px;}
+  .tl-item .d{font-size:11.5px;}
+  .stat-row{grid-template-columns:repeat(3,1fr);gap:8px;}
+  .topbar-in{padding:10px 14px;gap:8px;}
+  .logo span.lt{display:none;}
+  .role-switch button{padding:5px 10px;font-size:12.5px;}
+  .ring{width:min(74vw,290px);height:min(74vw,290px);}
+  .ring .tnum{font-size:52px;}
+  .shop-grid{grid-template-columns:repeat(2,1fr);gap:9px;}
+  .item{padding:12px;}
+  .item .nm{font-size:13px;}
+  .item .nt{font-size:11px;}
+  .big .price{font-size:14px}
+}
+
+
+/* ===========================================================
+   列作业 · 作业项录入
+   =========================================================== */
+.plan-empty{
+  background:var(--card);border-radius:var(--r);padding:26px 22px;text-align:center;
+  box-shadow:var(--shadow);margin-bottom:18px;
+}
+.pe-ico{font-size:38px;line-height:1;margin-bottom:10px;}
+.pe-t{font-size:17px;font-weight:700;margin-bottom:8px;}
+.pe-d{font-size:13.5px;color:var(--ink2);line-height:1.95;margin-bottom:18px;text-align:left;}
+.plan-empty .btn{width:100%;}
+
+/* 作业总量账 */
+.plan-bar{
+  background:var(--card);border-radius:var(--r);padding:16px 18px;margin-bottom:18px;
+  box-shadow:var(--shadow);border-left:4px solid var(--green);
+}
+.plan-bar.over{border-left-color:var(--orange);background:#FFFCF8;}
+.pb-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;}
+.pb-top b{font-size:15.5px;}
+.pb-top span{font-size:12.5px;color:var(--ink3);}
+.pb-sub{font-size:13.5px;color:var(--ink2);}
+.plan-bar.over .pb-sub{color:#C25E14;font-weight:650;}
+.pb-tip{
+  font-size:12.5px;color:var(--ink2);line-height:1.9;margin-top:10px;
+  background:var(--orange-soft);border-radius:10px;padding:10px 12px;
+}
+.pb-acts{margin-top:12px;}
+
+/* 录入面板 */
+.ia-lb{font-size:12.5px;color:var(--ink3);font-weight:650;margin:16px 0 8px;}
+.ia-chips{display:flex;flex-wrap:wrap;margin:-4px;}
+.ia-chips button{
+  margin:4px;padding:8px 16px;border-radius:11px;background:#F2F4F9;
+  font-size:13.5px;font-weight:650;color:var(--ink2);border:1px solid transparent;
+}
+.ia-chips button.on{background:var(--brand-soft);color:var(--brand);border-color:#C9D0FA;}
+.ia-input{
+  width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--line);
+  background:#FAFBFD;font-size:15px;color:var(--ink);outline:none;font-family:inherit;
+}
+.ia-input:focus{border-color:var(--brand);background:#fff;}
+.ia-type{font-size:12px;color:var(--ink3);margin-top:7px;line-height:1.8;}
+.ia-dim{color:var(--ink3);}
+.itype{
+  display:inline-block;padding:2px 8px;border-radius:7px;font-size:11.5px;
+  font-weight:700;border:1px solid;vertical-align:middle;
+}
+.ia-durs{display:flex;flex-direction:column;}
+.ia-durs button{
+  display:flex;align-items:baseline;padding:11px 14px;margin-bottom:8px;
+  border-radius:12px;background:#F7F8FC;border:1px solid var(--line);text-align:left;
+}
+.ia-durs button.on{background:var(--brand-soft);border-color:#C9D0FA;}
+.ia-durs button b{font-size:14px;font-weight:700;color:var(--ink);margin-right:10px;}
+.ia-durs button span{font-size:12px;color:var(--ink3);}
+.ia-durs button.on b{color:var(--brand);}
+.ia-list{margin-top:4px;}
+.ia-row{
+  display:flex;align-items:center;padding:9px 2px;border-bottom:1px solid var(--line);
+  font-size:13.5px;
+}
+.ia-row:last-child{border-bottom:none;}
+.ia-n{width:20px;color:var(--ink3);font-size:12px;flex:0 0 auto;}
+.ia-s{
+  flex:0 0 auto;font-size:11.5px;color:var(--brand);background:var(--brand-soft);
+  padding:2px 7px;border-radius:6px;margin-right:8px;font-weight:650;
+}
+.ia-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ia-m{flex:0 0 auto;color:var(--ink3);font-size:12.5px;margin-left:8px;}
+.ia-x{
+  flex:0 0 auto;width:26px;height:26px;border-radius:8px;margin-left:6px;
+  color:var(--ink3);font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;
+}
+.ia-x:active{background:var(--red-soft);color:var(--red);}
+
+@media (max-width:520px){
+  .pb-top{flex-direction:column;}
+  .pb-top span{margin-top:2px;}
+  .sheet{padding:20px;}
+}
+
+.pb-note{font-size:12.5px;color:var(--green);margin-top:6px;font-weight:650;}
+.grid-card.off{opacity:.42;}
+
+.tl-item.overline{opacity:.45;}
+
+/* ---------- 课外练习（随机题库 · 一天一科） ---------- */
+.prac-wrap{
+  padding:16px 16px 44px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.prac-head{display:flex;flex-direction:column;gap:9px;}
+.prac-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.prac-sub{
+  font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:999px;
+  letter-spacing:.2px;
+}
+.prac-sub.sub-math{background:var(--brand-soft);color:var(--brand);}
+.prac-sub.sub-cn{background:var(--green-soft);color:var(--green);}
+.prac-sub.sub-en{background:var(--orange-soft);color:#C4671F;}
+.prac-count{font-size:12.5px;color:var(--ink2);font-weight:650;}
+.prac-score{margin-left:auto;font-size:12.5px;color:var(--ink3);font-weight:650;}
+.prac-bar{height:5px;border-radius:999px;background:var(--line);overflow:hidden;}
+.prac-bar i{
+  display:block;height:100%;border-radius:999px;
+  background:linear-gradient(90deg,var(--brand2),var(--brand));transition:width .3s;
+}
+
+.prac-q{
+  background:var(--card);border-radius:var(--r);padding:22px 18px;
+  font-size:20px;font-weight:700;line-height:1.65;box-shadow:var(--shadow);
+  word-break:break-word;
+}
+.prac-opts{display:flex;flex-direction:column;gap:10px;}
+.prac-opt{
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  padding:15px 16px;border-radius:14px;background:var(--card);
+  border:1.5px solid var(--line);box-shadow:var(--shadow);
+  font-size:15.5px;font-weight:600;color:var(--ink);
+  transition:background .15s,border-color .15s,transform .1s;
+}
+.prac-opt:active{transform:scale(.985);}
+.prac-key{
+  flex:0 0 24px;height:24px;border-radius:8px;background:var(--bg);
+  display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--ink2);
+}
+.prac-txt{flex:1;line-height:1.5;}
+.prac-opt.right{background:var(--green-soft);border-color:#A9E2C6;}
+.prac-opt.right .prac-key{background:var(--green);color:#fff;}
+.prac-opt.wrong{background:var(--red-soft);border-color:#F3BFBF;}
+.prac-opt.wrong .prac-key{background:var(--red);color:#fff;}
+.prac-opt.dim{opacity:.5;}
+
+.prac-input-row{display:flex;}
+.prac-input{
+  flex:1;padding:15px 16px;border-radius:14px;border:1.5px solid var(--line);
+  background:var(--card);font-size:20px;font-weight:700;color:var(--ink);
+  text-align:center;font-variant-numeric:tabular-nums;
+  box-shadow:var(--shadow);outline:none;
+}
+.prac-input:focus{border-color:var(--brand);}
+.prac-submit{width:100%;margin-top:2px;}
+
+.prac-fb{border-radius:14px;padding:13px 15px;font-size:14px;font-weight:650;line-height:1.7;}
+.prac-fb.ok{background:var(--green-soft);color:#1B7A50;}
+.prac-fb.no{background:var(--red-soft);color:#B33A3A;}
+.prac-tip{font-size:12.5px;color:var(--ink2);font-weight:500;margin-top:5px;line-height:1.65;}
+
+.prac-foot{display:flex;justify-content:center;margin-top:6px;}
+
+/* 科目分段头：换科时给个明显的断点，避免孩子以为题目跳错了 */
+.prac-seg{
+  display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;
+  padding:10px 14px;border-radius:12px;
+  border-left:3px solid var(--brand);background:var(--card);
+  box-shadow:var(--shadow);
+}
+.prac-seg b{font-size:15px;font-weight:800;color:var(--brand);}
+.prac-seg span{font-size:12px;color:var(--ink3);}
+.prac-seg.seg-cn{border-left-color:var(--green);}
+.prac-seg.seg-cn b{color:var(--green);}
+.prac-seg.seg-en{border-left-color:var(--orange);}
+.prac-seg.seg-en b{color:#C4671F;}
+
+/* 结果页分科成绩 */
+.prac-by{display:flex;justify-content:center;gap:10px;margin-top:12px;flex-wrap:wrap;}
+.prac-by-item{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:var(--card);border-radius:12px;padding:9px 16px;
+  box-shadow:var(--shadow);min-width:76px;
+}
+.prac-by-k{font-size:11.5px;color:var(--ink3);font-weight:650;}
+.prac-by-v{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;}
+
+/* 结果页 */
+.prac-done{text-align:center;padding:14px 0 6px;}
+.prac-big{font-size:60px;font-weight:800;letter-spacing:-2px;color:var(--brand);line-height:1;}
+.prac-big span{font-size:24px;color:var(--ink3);font-weight:700;}
+.prac-tone{font-size:15px;font-weight:700;margin-top:8px;}
+.prac-sub2{font-size:12.5px;color:var(--ink3);margin-top:6px;}
+.prac-allclear{
+  background:var(--green-soft);color:#1B7A50;border-radius:14px;
+  padding:16px;text-align:center;font-size:14px;font-weight:650;
+}
+.prac-wrong{display:flex;flex-direction:column;gap:10px;}
+.prac-wrong-t{font-size:13px;font-weight:750;color:var(--ink2);}
+.prac-wrong-item{background:var(--card);border-radius:14px;padding:14px 15px;box-shadow:var(--shadow);}
+.prac-wrong-q{font-size:14px;font-weight:650;line-height:1.7;}
+.prac-wrong-a{font-size:12.5px;color:var(--ink2);margin-top:6px;line-height:1.7;}
+.prac-wrong-a b{color:var(--red);}
+.prac-wrong-a b.ok{color:var(--green);}
+
+/* ===========================================================
+   周六自主计划
+   这张卡不显示「还剩多少没做」，也不显示积分 ——
+   周六是孩子自己安排的一天，任何倒计时都会把它变回任务。
+   =========================================================== */
+.sat-hero{
+  background:linear-gradient(120deg,#FFF3E6,#FFE7CF);
+  border-radius:var(--r);padding:20px 22px;color:#7A3B14;box-shadow:var(--shadow);
+}
+.sat-hero.full{background:linear-gradient(120deg,#E9F8F0,#D6F1E4);color:#14603F;}
+.sat-cap{font-size:12.5px;opacity:.78;letter-spacing:.6px;font-weight:600;}
+.sat-num{font-size:40px;font-weight:800;line-height:1.2;margin-top:2px;letter-spacing:-1px;}
+.sat-num small{font-size:16px;font-weight:600;opacity:.72;margin-left:4px;}
+.sat-sub{font-size:12.8px;opacity:.82;margin-top:4px;line-height:1.7;}
+
+.sat-add{display:flex;gap:8px;align-items:center;}
+.sat-in{
+  flex:1;min-width:0;height:42px;border-radius:12px;border:1px solid var(--line);
+  background:#F8F9FC;padding:0 12px;font-size:16px;color:var(--ink);outline:none;font-family:inherit;
+}
+.sat-in:focus{border-color:var(--brand);background:#fff;}
+.sat-add-btn{height:42px;padding:0 18px;border-radius:12px;white-space:nowrap;}
+
+.sat-ideas{margin-top:14px;display:flex;flex-direction:column;gap:10px;}
+.sat-idea-g{display:flex;gap:10px;align-items:flex-start;}
+.sat-idea-t{font-size:12px;color:var(--ink3);flex:0 0 52px;padding-top:5px;}
+.sat-idea-chips{display:flex;flex-wrap:wrap;gap:7px;flex:1;min-width:0;}
+.sat-chip{
+  border:1px solid var(--line);background:#fff;color:var(--ink2);
+  font-size:12.5px;padding:5px 11px;border-radius:999px;font-family:inherit;cursor:pointer;
+}
+.sat-chip:active{transform:scale(.96);background:var(--brand-soft);border-color:#C9D0FA;}
+
+.sat-row{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);}
+.sat-row:last-child{border-bottom:none;}
+.sat-tick{
+  flex:0 0 24px;width:24px;height:24px;border-radius:8px;border:1.6px solid #CFD5E2;
+  background:#fff;padding:0;display:flex;align-items:center;justify-content:center;
+  color:#fff;cursor:pointer;
+}
+.sat-tick svg{width:15px;height:15px;}
+.sat-row.done .sat-tick{background:var(--green);border-color:var(--green);}
+.sat-text{flex:1;min-width:0;font-size:14.5px;font-weight:600;color:var(--ink);}
+.sat-row.done .sat-text{color:var(--ink3);text-decoration:line-through;text-decoration-color:#C8CFDA;}
+.sat-tag{font-size:11.5px;padding:2px 8px;border-radius:999px;white-space:nowrap;font-weight:600;}
+.sat-del{
+  flex:0 0 24px;width:24px;height:24px;border:none;background:transparent;
+  color:var(--ink3);font-size:18px;line-height:1;padding:0;cursor:pointer;
+}
+.sat-sum-top{
+  font-size:12.5px;color:var(--ink3);padding-bottom:6px;
+  border-bottom:1px solid var(--line);margin-bottom:2px;
+}
+
+/* 家长端 · 往日 */
+.hist-head{background:linear-gradient(120deg,#3A4A7A,#5B6EA8);}
+.hist-pct{font-size:26px;font-weight:800;line-height:1.15;letter-spacing:-.5px;}
+.hist-pct small{font-size:13px;font-weight:600;opacity:.75;margin-left:1px;}
+.hist-bar{height:6px;border-radius:999px;background:#E7EAF1;margin-top:10px;overflow:hidden;}
+.hist-bar i{display:block;height:100%;border-radius:999px;background:var(--brand);transition:width .3s ease;}
+.hist-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px;}
+.hist-nav .btn{flex:0 0 auto;font-size:13px;padding:8px 14px;border-radius:12px;}
+.hist-nav .btn[disabled]{opacity:.35;}
+.hist-pos{font-size:12.5px;color:var(--ink3);}
+
+/* 手机上 .balance .side 是默认隐藏的（工作日那张卡右侧的积分只是附加信息）。
+   但往日页的完成率是主体信息，必须放行，否则手机上就只剩一个空白的右半边。 */
+@media (max-width:720px){
+  .hist-head .side{display:block;}
+}
+
+/* 皮肤切换：买过皮肤包才出现，纯外观，不碰任何判定 */
+.skin-bar{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;}
+.skin-dot{
+  width:24px;height:24px;border-radius:50%;padding:0;flex:0 0 auto;
+  border:2px solid transparent;cursor:pointer;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);
+  -webkit-tap-highlight-color:transparent;
+}
+.skin-dot.on{border-color:#26304A;transform:scale(1.14);}
+.skin-name{font-size:12px;color:var(--ink3);}
+
+/* 称号：挂在成长页顶部，替代原来的「头像框」（孩子端没有头像） */
+.title-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin:0 4px 12px;padding:10px 14px;border-radius:14px;
+  background:#EEF1FE;border:1px solid #DDE2FD;
+}
+.title-chip{font-size:14.5px;font-weight:700;color:#2A3566;}
+
+/* ===========================================================
+   宠物系统
+   形象用 emoji 不引图片：换皮肤、换装扮全靠拼装，零资源加载。
+   状态越差动得越少 —— 不给文字，孩子看动作就知道它不舒服。
+   =========================================================== */
+
+.pet-hero{
+  margin:0 2px 14px;padding:18px 16px 14px;border-radius:20px;
+  background:linear-gradient(180deg,#FBFCFF 0%,#F1F4FD 100%);
+  border:1px solid var(--line);box-shadow:0 6px 20px rgba(30,45,90,.05);
+  text-align:center;
+}
+.pet-hd{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;}
+.pet-nm{font-size:17px;font-weight:800;color:var(--ink);}
+.pet-stg{font-size:12px;color:var(--ink3);font-weight:600;}
+.pet-stage{position:relative;height:132px;display:flex;align-items:center;justify-content:center;}
+.pet-face{
+  font-size:78px;line-height:1;user-select:none;
+  animation:petFloat 3.2s ease-in-out infinite;
+  filter:drop-shadow(0 8px 14px rgba(30,45,90,.13));
+}
+@keyframes petFloat{
+  0%,100%{transform:translateY(0) rotate(-1.5deg);}
+  50%{transform:translateY(-7px) rotate(1.5deg);}
+}
+/* 越虚越安静；濒危抖得让人心疼 */
+.ph-weak .pet-face{animation-duration:5.5s;}
+.ph-sick .pet-face{animation:none;opacity:.72;filter:grayscale(.45);}
+.ph-danger .pet-face{
+  animation:petShake .55s ease-in-out infinite;opacity:.62;filter:grayscale(.7);
+}
+@keyframes petShake{
+  0%,100%{transform:translateX(-2px);}
+  50%{transform:translateX(2px);}
+}
+.pet-wears{position:absolute;top:4px;right:calc(50% - 62px);font-size:26px;display:flex;gap:2px;}
+.pet-furns{position:absolute;bottom:2px;left:calc(50% - 80px);font-size:20px;display:flex;gap:6px;opacity:.9;}
+.pet-meta{font-size:12.5px;color:var(--ink3);margin-top:4px;}
+
+.pet-bars{display:flex;flex-direction:column;gap:9px;padding:14px 14px;}
+.pet-bar{display:flex;align-items:center;gap:9px;}
+.pb-l{width:34px;font-size:12.5px;color:var(--ink2);font-weight:700;flex:0 0 auto;}
+.pb-t{flex:1;height:9px;border-radius:6px;background:#EDF0F6;overflow:hidden;}
+.pb-t i{display:block;height:100%;border-radius:6px;transition:width .45s ease;}
+.pb-v{width:26px;text-align:right;font-size:12px;font-weight:700;color:var(--ink2);flex:0 0 auto;}
+
+.pet-acts{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:0 2px 16px;}
+.pa{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:11px 4px 9px;border-radius:15px;border:1px solid var(--line);
+  background:var(--card);cursor:pointer;-webkit-tap-highlight-color:transparent;
+  box-shadow:0 3px 10px rgba(30,45,90,.05);
+}
+.pa b{font-size:21px;line-height:1;}
+.pa span{font-size:12px;font-weight:700;color:var(--ink2);}
+.pa:active{transform:scale(.95);background:#F7F9FE;}
+
+.pet-warn{
+  margin:0 2px;padding:11px 14px;border-radius:14px;font-size:13px;line-height:1.75;
+  font-weight:600;
+}
+.pet-warn.warm{background:var(--orange-soft);color:#9A5518;border:1px solid #F6DCC6;}
+.pet-warn.bad{background:var(--amber-soft,#FDF3E0);color:#8A6218;border:1px solid #F0DFC0;}
+.pet-warn.dead{background:var(--red-soft);color:#A83232;border:1px solid #F5CCCC;}
+
+.pet-tip{
+  margin:12px 2px 0;padding:11px 14px;border-radius:14px;
+  background:#F4F6FC;border:1px solid var(--line);
+  font-size:12.5px;line-height:1.8;color:var(--ink2);
+}
+
+/* 领养列表：按档位分组 */
+.pet-tier-h{
+  display:flex;align-items:center;gap:7px;margin:14px 2px 9px;
+  font-size:13.5px;font-weight:800;color:var(--ink);
+}
+.pet-tier-h i{width:4px;height:14px;border-radius:2px;display:inline-block;}
+.pet-tier-h em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--ink3);margin-left:auto;}
+.pet-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.pet-card{
+  position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:13px 6px 11px;border-radius:16px;border:1px solid var(--line);
+  background:var(--card);cursor:pointer;-webkit-tap-highlight-color:transparent;
+  box-shadow:0 3px 10px rgba(30,45,90,.05);
+}
+.pet-card:active{transform:scale(.96);}
+.pet-card.dis{opacity:.5;}
+.pc-ico{font-size:34px;line-height:1.1;}
+.pc-nm{font-size:12.5px;font-weight:700;color:var(--ink);}
+.pc-pr{font-size:11.5px;font-weight:800;color:var(--brand);}
+.pc-pr::after{content:' 币';font-weight:600;color:var(--ink3);font-size:10.5px;}
+
+/* 家当 */
+.own-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  margin:4px 6px 4px 0;padding:6px 11px;border-radius:11px;
+  background:#F2F5FD;border:1px solid #E1E7F7;
+  font-size:12.5px;font-weight:700;color:#39466B;
+}
+
+/* 回忆册 */
+.grave-row{display:flex;gap:12px;align-items:flex-start;padding:12px 2px;border-bottom:1px solid var(--line);}
+.grave-row:last-child{border-bottom:0;}
+.gv-ico{font-size:30px;line-height:1;filter:grayscale(.85);opacity:.75;}
+.gv-body{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.gv-body b{font-size:14px;color:var(--ink);font-weight:800;}
+.gv-body em{font-style:normal;font-size:11.5px;color:var(--ink3);}
+.gv-body i{font-style:normal;font-size:12.5px;color:var(--ink2);line-height:1.6;}

@@ -1,0 +1,20 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        // GeckoView 只发布在 Mozilla 自己的仓库，google / mavenCentral 上没有
+        maven { url 'https://maven.mozilla.org/maven2/' }
+    }
+}
+
+rootProject.name = "StudyGuardian"
+include ':app'

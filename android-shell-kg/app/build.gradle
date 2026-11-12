@@ -1,0 +1,74 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.zhijue.kgraph'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.zhijue.kgraph'
+        minSdk 21
+        targetSdk 34
+        versionCode 2
+        versionName '1.0.1'
+
+        // 台电 X98 Air II（Baytrail）只有 x86 32 位；
+        // GeckoView 从 101 起砍掉了 x86，所以引擎锁在 100，ABI 也只留 x86。
+        ndk { abiFilters 'x86' }
+
+        resValue "string", "app_label", "知识图谱"
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    signingConfigs {
+        selfRelease {
+            storeFile file(System.getenv("SG_KEYSTORE") ?: "studyguardian.jks")
+            storePassword System.getenv("SG_STORE_PASS") ?: "study123456"
+            keyAlias System.getenv("SG_KEY_ALIAS") ?: "studyguardian"
+            keyPassword System.getenv("SG_KEY_PASS") ?: "study123456"
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.selfRelease
+        }
+    }
+
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            outputFileName = "knowledge-graph-x86-${variant.buildType.name}.apk"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    // GeckoView 的 libxul.so 需要在磁盘上按文件加载，不能压进 APK 里直接 mmap
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+}
+
+dependencies {
+    // 自带 Gecko 内核（Firefox 100），不依赖系统 WebView。
+    // 平板系统 WebView 是 Chromium 37，跑不了这个站点用到的现代语法。
+    implementation 'org.mozilla.geckoview:geckoview:100.0.20220425210429'
+}
